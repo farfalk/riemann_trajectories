@@ -40,7 +40,7 @@ b_3 = zeros(b_span,1);
 % instance reverse time axis in seconds
 t_b = linspace(-params.t_show,0,b_span);
 
-% riemann space basis
+% riemann space basis buffers
 b_11_ry = zeros(b_span,1);
 b_12_ry = zeros(b_span,1);
 b_22_ry = zeros(b_span,1);
@@ -56,6 +56,15 @@ xlabel(x_label)
 ylabel(y_label)
 zlabel(z_label)
 axis square
+
+if params.show_plane
+    plane = linspace(0.5,1.5,10);
+    [Xp,Yp]=meshgrid(plane);
+    Zp = (Xp+Yp)/2 + params.Zp_off;
+    mesh(Xp,Yp,Zp)
+end
+
+hold off
 
 drawnow
 
@@ -79,7 +88,7 @@ i = 0;
 % keep alive variable
 keep = 1;
 while keep && i ~= s_len
-    % read new sample removing continuous component noise
+    % increment signal counter
     i = i+1;
     
     % append new timepoint, while removing the oldest
@@ -88,19 +97,18 @@ while keep && i ~= s_len
     b_3 = [b_3(2:end,:); X3(i)];
     
     % riemann space components
-    xcov_seq = xcov(b_1);
-    b_11_ry = [b_11_ry(2:end,:); xcov_seq(b_span)];
-    xcov_seq = xcov(b_1,b_2);
-    b_12_ry = [b_12_ry(2:end,:); xcov_seq(b_span)];
-    xcov_seq = xcov(b_2);
-    b_22_ry = [b_22_ry(2:end,:); xcov_seq(b_span)];
-    xcov_seq = xcov(b_2,b_3);
-    b_23_ry = [b_23_ry(2:end,:); xcov_seq(b_span)];
-    xcov_seq = xcov(b_3);
-    b_33_ry = [b_33_ry(2:end,:); xcov_seq(b_span)];
-    xcov_seq = xcov(b_3,b_1);
-    b_31_ry = [b_31_ry(2:end,:); xcov_seq(b_span)];
-    
+    A = [b_1,b_2,b_3];
+    cov_mat = cov(A);
+    % normalization
+    cov_mat = log(1+(cov_mat.*1e9));
+
+    b_11_ry = [b_11_ry(2:end,:); cov_mat(1,1)];
+    b_12_ry = [b_12_ry(2:end,:); cov_mat(1,2)];
+    b_22_ry = [b_22_ry(2:end,:); cov_mat(2,2)];
+    b_23_ry = [b_23_ry(2:end,:); cov_mat(2,3)];
+    b_33_ry = [b_33_ry(2:end,:); cov_mat(3,3)];
+    b_31_ry = [b_31_ry(2:end,:); cov_mat(1,3)];
+
     % increment video frame counter
     n = n+1;
     
