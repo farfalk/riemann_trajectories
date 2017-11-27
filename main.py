@@ -36,7 +36,7 @@ picks.append(raw.ch_names.index('C4..'))
 
 print(picks)
 
-X = raw.get_data(picks=picks) # X contains the signals of interest.
+X = raw.get_data(picks=picks)  # X contains the signals of interest.
 
 print(X.shape)
 
