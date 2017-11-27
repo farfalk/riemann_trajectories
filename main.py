@@ -1,24 +1,30 @@
 # -*- coding: utf-8 -*-
 """
-Esperimento - clustering nello spazio di Riemann
+## Clustering in Riemann SPD space of covariance matrices
+the project aims at finding new ways of visualizing the mental state driven
+clusterization of covariance trajectories.
+The currently investigated approach is the visualization of the trajectories
+defined by y(t)=(var1,var2,covar12)(t) for each possible couple of electrodes.
 
 Luca Talevi (talevi.luca@gmail.com)
+Stefano Orsolini (stefano.orsolini@gmail.com)
 """
 
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from mne.io import concatenate_raws, read_raw_edf
-from mne.datasets import eegbci #motor imagery dataset
+from mne.datasets import eegbci # motor imagery/execution dataset
 from mne.filter import filter_data
-#reference: http://www.martinos.org/mne/stable/generated/mne.datasets.eegbci.load_data.html
+# reference: http://www.martinos.org/mne/stable/generated/mne.datasets.eegbci.load_data.html
 
 subject=1
-runs=[3, 7, 11] #motor execution
+runs=[3, 7, 11] # motor execution
+# TODO test also with motor imagination
 
-raw_fnames = eegbci.load_data(subject, runs) #contiene i file edf
-raws = [read_raw_edf(f, preload=True) for f in raw_fnames] #memorizza in raws i contenuti dei file edf
-raw = concatenate_raws(raws) #concatena i contenuti dei file edf in un solo raw
+raw_fnames = eegbci.load_data(subject, runs) # edf files
+raws = [read_raw_edf(f, preload=True) for f in raw_fnames] # saves in "raws" the content of the edfs
+raw = concatenate_raws(raws) # joins the content of raws in a single stream.
 
 raw.drop_channels(['STI 014'])
 
@@ -28,15 +34,15 @@ picks.append(raw.ch_names.index('C4..'))
 
 print(picks)
 
-X=raw.get_data(picks=picks) #i tre segnali di interesse
+X=raw.get_data(picks=picks) # X contains the signals of interest.
 
 print(X.shape)
 
-fs=160 #estratto dalle info del raw
+fs=160 # read in raw.info
 
-#voglio una finestra in grado di cogliere tra gli 8 e i 30 Hz, quindi devo prendere una lunghezza 160/8
-wlen=int(np.ceil(fs/8))
-filter_data(X, fs, 8, 30) #filtraggio 8-30
+# windowing must consider the fact that I want an 8-30 passband filtering.
+wlen=int(np.ceil(fs/8)) # fs/8 is the minimum length I can take.
+filter_data(X, fs, 8, 30) # filtraggio 8-30
 
 cov_c3cz=list()
 cov_c3c4=list()
@@ -56,24 +62,24 @@ x_c3c4=np.zeros([3,len(cov_c3cz)])
 x_czc4=np.zeros([3,len(cov_c3cz)])
 
 for i in range(len(cov_c3cz)):
-    x_c3cz[0,i]=cov_c3cz[i][0,0] #var c3
-    x_c3cz[1,i]=cov_c3cz[i][1,1] #var cz
-    x_c3cz[2,i]=cov_c3cz[i][0,1] #covar c3cz
+    x_c3cz[0,i]=cov_c3cz[i][0,0] # var c3
+    x_c3cz[1,i]=cov_c3cz[i][1,1] # var cz
+    x_c3cz[2,i]=cov_c3cz[i][0,1] # covar c3cz
 
-    x_c3c4[0,i]=cov_c3c4[i][0,0] #var c3
-    x_c3c4[1,i]=cov_c3c4[i][1,1] #var c4
-    x_c3c4[2,i]=cov_c3c4[i][0,1] #covar c3c4
+    x_c3c4[0,i]=cov_c3c4[i][0,0] # var c3
+    x_c3c4[1,i]=cov_c3c4[i][1,1] # var c4
+    x_c3c4[2,i]=cov_c3c4[i][0,1] # covar c3c4
 
-    x_czc4[0,i]=cov_czc4[i][0,0] #var cz
-    x_czc4[1,i]=cov_czc4[i][1,1] #var c4
-    x_czc4[2,i]=cov_czc4[i][0,1] #covar czc4
+    x_czc4[0,i]=cov_czc4[i][0,0] # var cz
+    x_czc4[1,i]=cov_czc4[i][1,1] # var c4
+    x_czc4[2,i]=cov_czc4[i][0,1] # covar czc4
 
 
 fig = plt.figure()
 
 #####################################################
 
-##GRAFICI SINGOLI
+## INDIVIDUAL PLOTS
 
 # ax1 = fig.add_subplot(131, projection='3d')
 # ax2 = fig.add_subplot(132, projection='3d')
@@ -96,7 +102,7 @@ fig = plt.figure()
 
 #####################################################
 
-##GRAFICO COMPLESSIVO
+## COMPLETE SINGLE PLOT
 
 # ax = fig.add_subplot(111, projection='3d')
 
@@ -109,7 +115,7 @@ fig = plt.figure()
 
 #####################################################
 
-## ANIMAZIONE
+## ANIMATION
 
 ax = fig.add_subplot(111, projection='3d')
 
@@ -144,3 +150,5 @@ for i in range(NUM,x_c3cz.size):
         p3.set_3d_properties(z3)
 
     plt.pause(1/(4*fs))
+
+# TODO introduce the nice visualization ideas used by stefano in the matlab prototypes.
