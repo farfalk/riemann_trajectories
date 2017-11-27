@@ -4,21 +4,19 @@
 % stefano.orsolini@gmail.com
 % ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-%% known parameters of input signal
-
 % sampling frequency
 params.Fs = 160;
+% analysis time window in seconds
+params.t_show = 5;
 
-%% visualization parameters
 % set amplitude axis: true->static, false->dynamic
 params.s_aaxis = false;
-
 % frames per second
 params.FPS = 25;
-% time interval to plot in seconds
-params.t_show = 4;
+% show hyperplane
+params.show_plane = true;
+% Z offset
+params.Zp_off = 0;
 
-
-%% function call
-
+% function call
 RTA_visualizer(params);
